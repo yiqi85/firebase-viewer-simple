@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .status {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .status.connecting {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status.connected {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .data-container {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            min-height: 200px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .data-container pre {
+            color: #333;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .empty-state {
+            color: #999;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        button {
+            display: block;
+            margin: 20px auto 0;
+            padding: 10px 20px;
+            background-color: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #5568d3;
+        }
+        
+        button:active {
+            background-color: #4557b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 Firebase Viewer</h1>
+        <div class="status connecting" id="status">Connecting...</div>
+        <div class="data-container" id="dataContainer">
+            <div class="empty-state">Waiting for data...</div>
+        </div>
+        <button onclick="refreshData()">Refresh Data</button>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js"></script>
+    
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCP4E0kMqMYTkANXyqFnVyVkzrspFDULVs",
+            authDomain: "test-angstromdevice.firebaseapp.com",
+            databaseURL: "https://test-angstromdevice-default-rtdb.firebaseio.com",
+            projectId: "test-angstromdevice",
+            storageBucket: "test-angstromdevice.firebasestorage.app",
+            messagingSenderId: "955489642820",
+            appId: "1:955489642820:web:43855b0c76af5001814f11"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const statusElement = document.getElementById('status');
+        const dataContainer = document.getElementById('dataContainer');
+
+        // Listen to Firebase data
+        function loadData() {
+            statusElement.textContent = 'Connecting...';
+            statusElement.className = 'status connecting';
+            
+            const dataRef = database.ref('/');
+            
+            dataRef.once('value', (snapshot) => {
+                const data = snapshot.val();
+                
+                if (data) {
+                    statusElement.textContent = '✓ Connected';
+                    statusElement.className = 'status connected';
+                    dataContainer.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    statusElement.textContent = '✓ Connected (No data)';
+                    statusElement.className = 'status connected';
+                    dataContainer.innerHTML = '<div class="empty-state">No data available in Firebase</div>';
+                }
+            }, (error) => {
+                statusElement.textContent = '✗ Error: ' + error.message;
+                statusElement.className = 'status error';
+                dataContainer.innerHTML = `<div class="empty-state">Error loading data: ${error.message}</div>`;
+            });
+        }
+
+        // Refresh data function
+        function refreshData() {
+            loadData();
+        }
+
+        // Load data on page load
+        loadData();
+    </script>
+</body>
+</html>
